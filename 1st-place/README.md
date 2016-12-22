@@ -4,13 +4,12 @@
 # Entrant Background and Submission Overview
 
 ### Mini-bio
-My name is XXXXXX and I am an Engineering Manager at XXXXXX. I recently
-completed my Masters in Predictive Analytics at XXXXXX. Although I
+I recently
+completed my Masters in Predictive Analytics. Although I
 started my current job in engineering leadership, I have increasingly been working
 more on the data science side of the house, for example I am a part of an initiative to
 upgrade our inhouse
-sentiment classification algorithms and general NLP capabilities
-within XXXXXX social products. I plan to transition to a fulltime
+sentiment classification algorithms and general NLP capabilities. I plan to transition to a fulltime
 Data Scientist
 role by this Spring.
 

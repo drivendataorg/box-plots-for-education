@@ -5,15 +5,14 @@
 
 Solution divide on 3 parts:
 
-1. Log model by XXXXXX
+1. Log model
 
-2. RF model by XXXXXX
+2. RF model
 
-3. Merge two models and replace all duplicates from test set
-XXXXXX describe his own part. I describe part 2 and part 3.
+3. Merge two models and replace all duplicates from test set. I describe part 2 and part 3.
 
 ### 1.
-The first models were developed by XXXXXX which used Stocastic Gradient Descent. This model was later combined with XXXXXX's
+The first models developed used Stocastic Gradient Descent.
 Random Forest model and duplicate removal to obtain 2nd rank in the competition. The idea was to keep the model as simple as possible.
 
 The problem was treated as an NLP problem rather than a machine learning problem with some structured dataset. Most of the NLP problems
