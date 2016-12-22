@@ -1,0 +1,403 @@
+rm(list = ls(all = TRUE))
+source("fn.base.R")
+gc()
+
+#Just Load all
+#################################################################################################
+train <- read.csv('input/TrainingData.csv'  )
+test <- read.csv('input/TestData.csv'  )
+sub <- read.csv('input/SubmissionFormat.csv'  )
+
+labels <- c(  "Function","Object_Type","Operating_Status","Position_Type","Pre_K","Reporting","Sharing","Student_Type","Use"  )
+target    <- train[ , labels]
+targetRAW <- train[ , labels]
+fn.save.data("targetRAW")
+
+train <- train[ , which( !(colnames(train) %in% labels))   ]
+test <- test[ ,colnames(train) ]
+
+#Make lower case, remove punctuation, remove word end letter(s, r, ing, ed)
+for( i in c(2:9,11:13,15:17)  ){
+  print(i)
+  train[[i]] <- as.character(train[[i]])
+  test[[i]] <- as.character(test[[i]])
+  p <- c( train[[i]],test[[i]] )     
+  p <- tolower(p)
+  p[is.na(p)] <- paste0("empty")
+  p[p==""] <- paste0("none")
+  p <- gsub("&"," ",p) 
+  p <- gsub('\\('," ",p) 
+  p <- gsub("\\)"," ",p) 
+  p <- gsub("-"," ",p) 
+  p <- gsub(","," ",p) 
+  p <- gsub("\\/"," ",p) 
+  p <- gsub("\\*", " ", p)
+  p <- gsub("\\'", " ", p)
+  p <- gsub("\"", " ", p)
+  p <- gsub("\\:", " ", p)
+  p <- gsub("  ", " ", p)
+  p <- gsub("  ", " ", p)
+  
+  p <- rmws(p)
+  p <- rmfs(p)
+  p <- rmfr(p)
+  p <- rmfing(p)
+  p <- rmfed(p)
+  train[[i]] <- p[1:nrow(train)]
+  test[[i]] <- p[(nrow(train)+1):length(p)  ]
+}
+gc()
+table(target$Function)
+train[ is.na(train)  ] <- -999
+test[ is.na(test)  ] <- -999
+sna(train)
+sna(test)
+gc()
+fn.save.data("train")
+fn.save.data("test")
+fn.save.data("sub")
+###################################################################################
+
+
+#For each text, extract the first, second and third word and build new features with that words
+###################################################################################
+for( feat in 2:17  ){ 
+  print(feat)
+  if( is.character(train[[feat]]) ){
+    f1 <- matrix( "none" , nrow=nrow(train),ncol=3 )
+    p <- lapply( train[[feat]] , strsplit," "  )
+    i=2
+    for( i in 1:length(p)  ){
+      t <- p[[i]]
+      t <- t[[1]]
+      l <- length(t)
+      if( l==1 ){
+        f1[i,1] <- t[1]
+      }else if(l==2){
+        f1[i,1] <- t[1]
+        f1[i,2] <- t[2]
+      }else if(l>2 ){
+        f1[i,1] <- t[1]
+        f1[i,2] <- t[2]
+        f1[i,3] <- t[3]
+      }
+    }
+    f1 <- data.frame( f1 )
+    colnames(f1) <- paste0("F",feat,"_",1:3 )
+    train <- cbind( train,f1 )
+    
+    f1 <- matrix( "none" , nrow=nrow(test),ncol=3 )
+    p <- lapply( test[[feat]] , strsplit," "  )
+    i=2
+    for( i in 1:length(p)  ){
+      t <- p[[i]]
+      t <- t[[1]]
+      l <- length(t)
+      if( l==1 ){
+        f1[i,1] <- t[1]
+      }else if(l==2){
+        f1[i,1] <- t[1]
+        f1[i,2] <- t[2]
+      }else if(l>2 ){
+        f1[i,1] <- t[1]
+        f1[i,2] <- t[2]
+        f1[i,3] <- t[3]
+      }
+    }
+    f1 <- data.frame( f1 )
+    colnames(f1) <- paste0("F",feat,"_",1:3 )
+    test <- cbind( test,f1 )
+  }
+  gc()
+}
+###################################################################################
+
+
+# Now convert TEXTs to indices, feature by feature
+###################################################################################
+for( i in 1:ncol(train)  ){
+  if( is.character(train[[i]])  ){
+    print(i)
+    p <- as.numeric( factor( c(train[[i]],test[[i]])  )  )
+    train[[i]] <- p[1:nrow(train)]
+    test[[i]] <- p[(nrow(train)+1):length(p)]
+    gc()
+  }  
+}
+train$X <- NULL # remove ids
+test$X <- NULL
+rm(f1,feat,i,l,p,t)
+gc()
+###################################################################################
+
+
+#Create numeric target matrix
+###################################################################################
+cols1 <- substr(colnames(sub)[2:38],11,1000)
+cols2 <- substr(colnames(sub)[39:49],14,1000)
+cols3 <- substr(colnames(sub)[50:52],19,1000)
+cols4 <- substr(colnames(sub)[53:77],16,1000)
+cols5 <- substr(colnames(sub)[78:80],8,1000)
+cols6 <- substr(colnames(sub)[81:83],12,1000)
+cols7 <- substr(colnames(sub)[84:88],10,1000)
+cols8 <- substr(colnames(sub)[89:97],15,1000)
+cols9 <- substr(colnames(sub)[98:105],6,1000)
+for( i in 1:9  ){
+  print(i)
+  p <- as.character(target[[i]])
+  p <- gsub(" ",".",p) 
+  p <- gsub("&",".",p) 
+  p <- gsub('\\(',".",p) 
+  p <- gsub("\\)",".",p) 
+  p <- gsub("-",".",p) 
+  p <- gsub(",",".",p) 
+  p <- gsub("\\/",".",p) 
+  target[[i]] <- p
+}
+
+dt <- data.table( name=cols1 , pos=1:length(cols1), key="name" )
+setkeyv(dt,"name")
+target$Function <- dt[ J(target$Function) ]$pos
+
+dt <- data.table( name=cols2 , pos=1:length(cols2), key="name" )
+setkeyv(dt,"name")
+target$Object_Type <- dt[ J(target$Object_Type) ]$pos
+
+dt <- data.table( name=cols3 , pos=1:length(cols3), key="name" )
+setkeyv(dt,"name")
+target$Operating_Status <- dt[ J(target$Operating_Status) ]$pos
+
+dt <- data.table( name=cols4 , pos=1:length(cols4), key="name" )
+setkeyv(dt,"name")
+target$Position_Type <- dt[ J(target$Position_Type) ]$pos
+
+dt <- data.table( name=cols5 , pos=1:length(cols5), key="name" )
+setkeyv(dt,"name")
+target$Pre_K <- dt[ J(target$Pre_K) ]$pos
+
+dt <- data.table( name=cols6 , pos=1:length(cols6), key="name" )
+setkeyv(dt,"name")
+target$Reporting <- dt[ J(target$Reporting) ]$pos
+
+dt <- data.table( name=cols7 , pos=1:length(cols7), key="name" )
+setkeyv(dt,"name")
+target$Sharing <- dt[ J(target$Sharing) ]$pos
+
+dt <- data.table( name=cols8 , pos=1:length(cols8), key="name" )
+setkeyv(dt,"name")
+target$Student_Type <- dt[ J(target$Student_Type) ]$pos
+
+dt <- data.table( name=cols9 , pos=1:length(cols9), key="name" )
+setkeyv(dt,"name")
+target$Use <- dt[ J(target$Use) ]$pos
+
+fn.save.data("target")
+sna(target)
+gc()
+###################################################################################
+
+
+
+#Build binary target matrix for each target
+###################################################################################
+MTARGET <- list()
+tg=1
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+
+tg=2
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+
+tg=3
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+
+tg=4
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+
+tg=5
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+
+tg=6
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+
+tg=7
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+
+tg=8
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+
+tg=9
+TARGET <- matrix( 0 ,nrow=nrow(train) , ncol=length(unique(target[[tg]])) )
+for( i in 1:nrow(target)){
+  TARGET[ i , target[[tg]][i]  ] <- 1
+}
+MTARGET[[tg]] <- TARGET
+fn.save.data("MTARGET")
+###################################################################################
+
+
+
+
+
+#Train all 9 targets using 15 fold CV
+###################################################################################
+fn.load.data("target")
+fn.load.data("MTARGET")
+cv <- rep( 1:15, nrow(train)  ) # 15 fold CV
+cv <- cv[1:nrow(train)]
+
+tg <- 5
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.5D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.5D")
+nllmc(MTARGET[[5]],pred.xg.5D$train)
+
+tg <- 3
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.3D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.3D")
+nllmc(MTARGET[[3]],pred.xg.3D$train)
+
+tg <- 6
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.6D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.6D")
+nllmc(MTARGET[[6]],pred.xg.6D$train)
+
+tg <- 7
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.7D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.7D")
+nllmc(MTARGET[[7]],pred.xg.7D$train)
+
+tg <- 9
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.9D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.9D")
+nllmc(MTARGET[[9]],pred.xg.9D$train)
+
+tg <- 8
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.8D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.8D")
+nllmc(MTARGET[[8]],pred.xg.8D$train)
+
+tg <- 2
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.2D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.2D")
+nllmc(MTARGET[[2]],pred.xg.2D$train)
+
+tg <- 4
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.4D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.4D")
+nllmc(MTARGET[[4]],pred.xg.4D$train)
+
+tg <- 1
+MTGT <- MTARGET[[tg]]
+tgt <- target[[tg]]-1
+pred.xg.1D <- xgbCV( train[,c(2,3,5,6,9,11:13,16:58)] , test[,c(2,3,5,6,9,11:13,16:58)] , tgt, MTGT, cv , ite=250 ,shri=0.10, depth=8,subsample=0.50,colsample=0.25, verbose=TRUE )
+fn.save.data("pred.xg.1D")
+nllmc(MTARGET[[1]],pred.xg.1D$train)
+###########################################################################################
+
+
+
+
+#Calculate the metric for all targets separatedly and then calculate main score
+###########################################################################################
+fn.load.data("target")
+fn.load.data("MTARGET")
+fn.load.data("pred.xg.1D")
+fn.load.data("pred.xg.2D")
+fn.load.data("pred.xg.3D")
+fn.load.data("pred.xg.4D")
+fn.load.data("pred.xg.5D")
+fn.load.data("pred.xg.6D")
+fn.load.data("pred.xg.7D")
+fn.load.data("pred.xg.8D")
+fn.load.data("pred.xg.9D")
+
+#Score for each target
+nllmc(MTARGET[[1]],pred.xg.1D$train)#0.10137
+nllmc(MTARGET[[2]],pred.xg.2D$train)#0.03018705
+nllmc(MTARGET[[3]],pred.xg.3D$train)#0.02853979
+nllmc(MTARGET[[4]],pred.xg.4D$train)#0.03723378
+nllmc(MTARGET[[5]],pred.xg.5D$train)#0.01737533
+nllmc(MTARGET[[6]],pred.xg.6D$train)#0.04242992
+nllmc(MTARGET[[7]],pred.xg.7D$train)#0.06398903
+nllmc(MTARGET[[8]],pred.xg.8D$train)#0.04378052
+nllmc(MTARGET[[9]],pred.xg.9D$train)#0.07619743
+
+#Main Score 0.4411
+llmc(MTARGET[[1]],pred.xg.1D$train)+
+  llmc(MTARGET[[2]],pred.xg.2D$train)+
+  llmc(MTARGET[[3]],pred.xg.3D$train)+
+  llmc(MTARGET[[4]],pred.xg.4D$train)+
+  llmc(MTARGET[[5]],pred.xg.5D$train)+
+  llmc(MTARGET[[6]],pred.xg.6D$train)+
+  llmc(MTARGET[[7]],pred.xg.7D$train)+
+  llmc(MTARGET[[8]],pred.xg.8D$train)+
+  llmc(MTARGET[[9]],pred.xg.9D$train)
+
+
+#Hit rate for each target
+mean( max.col(pred.xg.1D$train)==target[[1]]  )#0.9695261
+mean( max.col(pred.xg.2D$train)==target[[2]]  )#0.9914184
+mean( max.col(pred.xg.3D$train)==target[[3]]  )#0.9916908
+mean( max.col(pred.xg.4D$train)==target[[4]]  )#0.9903642
+mean( max.col(pred.xg.5D$train)==target[[5]]  )#0.9950334
+mean( max.col(pred.xg.6D$train)==target[[6]]  )#0.9878984
+mean( max.col(pred.xg.7D$train)==target[[7]]  )#0.9818226
+mean( max.col(pred.xg.8D$train)==target[[8]]  )#0.9886004
+mean( max.col(pred.xg.9D$train)==target[[9]]  )#0.9780352
+
+##############################################################################################
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+{
+    "contents" : "# create a random sequence of 0's and 1's\nfakePredictions <- rbinom(20, 1, 0.5)\n\n# turn these into a data frame so we can print them\npredictionsDataframe <- data.frame(fakePredictions)\n\n# However, these are integers. The below will return:\n# [1] \"integer\"\ntypeof(predictionsDataframe$fakePredictions)\n\n# So, we can force these to be doubles,\npredictionsDataframe$fakePredictions <- as.numeric(predictionsDataframe$fakePredictions)\n\n# Now typeof will return:\n# [1] \"double\"\ntypeof(predictionsDataframe$fakePredictions)\n\n# The parameter nsmall to the format function is the minimum number\n# of digits to display after the decimal point\nwrite.csv(format(predictionsDataframe, nsmall=2), \"submission.csv\") \n",
+    "created" : 1424264363922.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "2381124786",
+    "id" : "17817C34",
+    "lastKnownWriteTime" : 0,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
