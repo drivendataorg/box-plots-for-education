@@ -1,4 +1,4 @@
-[<img src='https://community.drivendata.org/uploads/default/optimized/1X/e055d38472b1ae95f54110375180ceb4449c026b_1_690x111.png'>](https://www.drivendata.org/)
+[<img src='https://s3.amazonaws.com/drivendata-public-assets/logo-white-blue.png' style="max-width:85%;>](https://www.drivendata.org/)
 <br><br>
 
 ![Banner Image](https://s3.amazonaws.com/drivendata/comp_images/4.jpg)
@@ -17,7 +17,7 @@ This repository contains code volunteered from leading competitors in the [Box-P
 ## Winning Submissions
 
 Place | Team or User | Public Score | Private Score | Summary of Model
---- | --- | --- | --- | --- 
+--- | --- | --- | --- | ---
 1 | quocnle | 0.3665 | 0.3650 | My model is based on Online Learning, specifically a Logistic Regression model that uses the hashing trick and stochastic gradient descent with an adaptive learning rate.
 2 | Abhishek | 0.4409 | 0.4388 | The problem was treated as an NLP problem rather than a machine learning problem with some structured dataset.
 3 | giba | 0.4551 | 0.4534 | My approach is based in a Gradient Boosted Machine, so all text must be converted to an identification id (number).
