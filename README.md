@@ -26,4 +26,4 @@ Place | Team or User | Public Score | Private Score | Summary of Model
 3 | giba | 0.4551 | 0.4534 | My approach is based in a Gradient Boosted Machine, so all text must be converted to an identification id (number).
 
 
-#### Winner's Interview: [Quoc Le](http://blog.drivendata.org/2015/02/26/box-plots-winner-interview-quoc-le/)
+**Winner's Interview: [Quoc Le](https://drivendata.co/blog/box-plots-winner-interview-quoc-le/)**
