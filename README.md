@@ -4,15 +4,18 @@
 ![Banner Image](https://s3.amazonaws.com/drivendata/comp_images/4.jpg)
 
 # Box-Plots for Education
+
 ## Goal of the Competition
+
 Budgets for schools and school districts are huge, complex, and unwieldy. It's no easy task to digest where and how schools are using their resources. Education Resource Strategies is a non-profit that tackles just this task with the goal of letting districts be smarter, more strategic, and more effective in their spending.
 
 Your task is a multi-class-multi-label classification problem with the goal of attaching canonical labels to the freeform text in budget line items. These labels let ERS understand how schools are spending money and tailor their strategy recommendations to improve outcomes for students, teachers, and administrators.
 
 ## What's in this Repository
-This repository contains code volunteered from leading competitors in the [Box-Plots for Education](https://www.drivendata.org/competitions/4/) on DrivenData.
 
-#### Winning code for other DrivenData competitions is available in the [competition-winners repository](https://github.com/drivendataorg/competition-winners).
+This repository contains code volunteered from leading competitors in the [Box-Plots for Education](https://www.drivendata.org/competitions/4/) on DrivenData. Code for all winning solutions are open source under the MIT License.
+
+**Winning code for other DrivenData competitions is available in the [competition-winners repository](https://github.com/drivendataorg/competition-winners).**
 
 ## Winning Submissions
 
